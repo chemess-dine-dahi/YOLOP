@@ -51,6 +51,10 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+# Data transformation function.
+def transform_fn(data_item):
+    images, _ = data_item
+    return images
 
 def main():
     # set all the configurations
@@ -198,10 +202,11 @@ def main():
                           t_inf=times[0], t_nms=times[1])
     logger.info(msg)
 
-    ### Quantize model with NNI Observers.
+    ### Quantize model with NNCF quantize.
 
     # Instantiate the ObserverQuantizer.
-    quantizer = quantize(model.eval(), configure_list)#, optimizer)
+    calibration_dataset = nncf.Dataset(val_loader, transform_fn)
+    quantizer = nncf.quantize(model, calibration_dataset)
     # Calibration step.
     model.eval()
     with torch.no_grad():
